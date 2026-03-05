@@ -11,7 +11,7 @@ const monaSans = Mona_Sans({
 
 export const metadata: Metadata = {
   title: "Vakta.ai",
-  description: "A platform for mock interviews",
+  description: "A AI powered platform for mock interviews",
 };
 
 export default function RootLayout({
@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en"  className="dark">
       <body
-        className={`${monaSans.className} antialiased`}
+        className={`${monaSans.className} antialiased pattern`}
       >
         {children}
       </body>
