@@ -2,42 +2,57 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import {z} from "zod"
+import {email, z} from "zod"
 
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import{
-   Form,
-   FormControl,
-   FormDescription,
-   FormField,
-   FormItem,
-   FormLabel,
-   FormMessage,
-} from "@/components/ui/form"
+import{Form} from "@/components/ui/form"
+import Link from "next/link";
+import { toast } from "sonner"
+import FormField from "./FormField"
+import { useRouter } from "next/navigation"
 
-const formSchema = z.object({
-  username: z
-    .string()
-    .min(5, "Bug title must be at least 5 characters.")
-    .max(32, "Bug title must be at most 32 characters."),
 
-  
-})
 
-const AuthForm = () => {
+const  authFormSchema = (type: FormType)=>{
+      return z.object({
+        name:type === 'sign-up' ? z.string().min(3) : z.string()
+         .optional(),
+        email:z.email(),
+        password: z.string().min(3),
+      })
+}
+
+const AuthForm = ({type}: {type: FormType}) => {
+  const router = useRouter();
+   const formSchema = authFormSchema(type)
     // Define the form
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            username: "",
+            name: "",
+            email: "",
+            password: "",
         },
     })
 
     //Define a submit handler
     function onSubmit(values: z.infer<typeof formSchema>) {
-
+         try {
+           if(type === 'sign-up') {
+             toast.success('Account created successfully.please sign in.');
+             router.push('/sign-in')
+           }else{
+             toast.success(' sign in successfully.');
+             router.push('/')
+           }
+         } catch (error) {
+             console.log(error);
+             toast.error(`there was an error: ${error}`)
+         }
     }
+
+    const isSignin = type === 'sign-in';
   return (
      <div className="card-border lg:min-w-[566px]">
       <div className="flex flex-col gap-6 card py-14 px-10">
@@ -51,20 +66,42 @@ const AuthForm = () => {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="w-full space-y-6 mt-4 form"
-          >
-            
-
-           
-
-            
-
+            className="w-full space-y-6 mt-4 form">          
+            {!isSignin && (
+               <FormField
+                    control={form.control}
+                    name="name"
+                    label="Username"
+                    placeholder="Your Name"
+               />
+            )}
+            <FormField
+                    control={form.control}
+                    name="email"
+                    label="Email"
+                    placeholder="Your email address"
+                    type="email"
+               />
+            <FormField
+                    control={form.control}
+                    name="password"
+                    label="Password"
+                    placeholder="Enter your password"
+                    type="password"
+               />
             <Button className="btn" type="submit">
-             
+                {isSignin ? 'sign-in' : 'Create an Account'}
             </Button>
           </form>
         </Form>
-
+       
+       <p className="text-center">
+           {isSignin ? 'No account yet?' : 'Have an Account already?'}
+           <Link href={!isSignin ? '/sign-in' : '/sign-up'}  
+           className="font-bold text-user-primary ml-1">
+                    {!isSignin ? "Sign in" : "Sign up"}
+           </Link>
+       </p>
        
       </div>
     </div>
