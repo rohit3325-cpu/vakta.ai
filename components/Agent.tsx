@@ -16,6 +16,7 @@ enum CallStatus {
 
 interface SavedMessage {
   role: 'user' |'system'|'assistant';
+  content: string;
 }
 
 const Agent = ({ userName,userId, type }: AgentProps) => {
@@ -60,8 +61,29 @@ const Agent = ({ userName,userId, type }: AgentProps) => {
   },[])
   
   useEffect(()=>{
-    
-  })
+    if(callStatus === CallStatus.FINISHED) router.push('/');
+  },[messages, callStatus, type, userId]);
+
+  const handleCall = async () =>{
+    setCallStatus(CallStatus.CONNECTING);
+
+    await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!,{
+      variableValues:{
+        username: userName,
+        userid: userId,
+      }
+    })
+  }
+
+  const handleDisconnect = async()=>{
+    setCallStatus(CallStatus.FINISHED);
+
+    vapi.stop();
+  }
+
+  const latestMessage = messages[messages.length -1]?.content;
+  const isCallInactiveOrFinished = callStatus === CallStatus.INACTIVE || callStatus===CallStatus.FINISHED;
+
 
   return (
     <>
@@ -100,9 +122,9 @@ const Agent = ({ userName,userId, type }: AgentProps) => {
             messages.length >0 && (
                 <div className='transcript-border'>
                     <div className='transcript' >
-                        <p key={lastMessage} className={cn(
+                        <p key={latestMessage} className={cn(
                           'transition-opacity duration-500 opacity-0', 'animate-fadeIn opacity-100' )}>
-                            {lastMessage}
+                            {latestMessage}
                         </p>
                     </div>
                 </div>
@@ -110,7 +132,7 @@ const Agent = ({ userName,userId, type }: AgentProps) => {
           }
       <div className="w-full flex justify-center">
         {callStatus !== CallStatus.ACTIVE ? (
-          <button className="relative btn-call">
+          <button className="relative btn-call" onClick={handleCall}>
             
             <span
               className={cn(
@@ -120,15 +142,12 @@ const Agent = ({ userName,userId, type }: AgentProps) => {
             />
 
             <span>
-              {callStatus === CallStatus.INACTIVE ||
-              callStatus === CallStatus.FINISHED
-                ? "Call"
-                : "..."}
+              {isCallInactiveOrFinished ? "Call" : "..."}
             </span>
 
           </button>
         ):(
-            <button className='btn-disconnect'>
+            <button className='btn-disconnect' onClick={handleDisconnect}>
                 End
             </button>
         )}
