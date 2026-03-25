@@ -1,11 +1,16 @@
 import Interviewcard from '@/components/Interviewcard'
 import { Button } from '@/components/ui/button'
 import { dummyInterviews } from '@/constants'
+import { getCurrentUser, getInterviewByUserId } from '@/lib/actions/auth.action'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 
-const Page = () => {
+const Page = async() => {
+  const user = await getCurrentUser();
+  const userInterview = await getInterviewByUserId(user?.id!);
+
+  const hasPastInterviews = userInterview?.length>0;
     return (
         <>
        <section className="card-cta flex flex-col items-center gap-8 lg:flex-row lg:justify-between">
@@ -44,9 +49,16 @@ const Page = () => {
             <h2>Your Past Interviews</h2>
 
              <div className="interviews-section grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-                {dummyInterviews.map((interview)=>(
-                    <Interviewcard key={interview.id}{...interview} />
-                ))}
+                {
+
+                  hasPastInterviews ? (
+                    userInterview?.map((interview)=>(
+                        <Interviewcard key={interview.id}{...interview} />
+                    ))
+                  ):
+                 ( <p>You Haven&apos;t taken ant interviews yet</p>
+               )
+                }
              </div>
             </section>  
             
