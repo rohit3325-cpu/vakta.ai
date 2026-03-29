@@ -29,34 +29,44 @@ export async function setSessionCookie(idToken: string) {
 
 
 export async function signUp(params: SignUpParams) {
-  const { uid, name, email } = params;
-    try {
-        // check if user exists in db
+    const { uid, name, email } = params;
+
+  try {
+    // 🔒 Check if email is verified
+    const user = await auth.getUser(uid);
+
+    if (!user.emailVerified) {
+      return {
+        success: false,
+        message: "Please verify your email before continuing.",
+      };
+    }
+
+    // check if user exists in db
     const userRecord = await db.collection("users").doc(uid).get();
     if (userRecord.exists)
       return {
         success: false,
         message: "User already exists. Please sign in.",
       };
-    await db.collection("users").doc(uid).set({
-  name,
-  email,
-  createdAt: new Date(),
-});
 
-    console.log("🔥 Firestore write success");
+    await db.collection("users").doc(uid).set({
+      name,
+      email,
+      createdAt: new Date(),
+    });
 
     return {
       success: true,
-      message: "Firestore working",
+      message: "User created successfully",
     };
 
   } catch (error) {
-    console.error("🔥 Firestore error:", error);
+    console.error("Firestore error:", error);
 
     return {
       success: false,
-      message: "Firestore failed",
+      message: "Signup failed",
     };
   }
 }
