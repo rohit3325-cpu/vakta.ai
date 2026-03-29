@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendEmailVerification,
 } from "firebase/auth";
 
 import { Form } from "@/components/ui/form";
@@ -52,19 +53,16 @@ const AuthForm = ({ type }: { type: FormType }) => {
           password
         );
 
-        const result = await signUp({
-          uid: userCredential.user.uid,
-          name: name!,
-          email,
-          password,
-        });
+        // ✅ send verification email
+        await sendEmailVerification(userCredential.user, {
+          url: "https://vakta-ai.vercel.app/sign-in",
+          handleCodeInApp: true,
+        });        
 
-        if (!result.success) {
-          toast.error(result.message);
-          return;
-        }
+        toast.success(
+          "Verification email sent. If you don't see it, check your spam folder."
+        );
 
-        toast.success("Account created successfully. Please sign in.");
         router.push("/sign-in");
       } else {
         const { email, password } = data;
@@ -75,11 +73,25 @@ const AuthForm = ({ type }: { type: FormType }) => {
           password
         );
 
-        const idToken = await userCredential.user.getIdToken();
-        if (!idToken) {
-          toast.error("Sign in Failed. Please try again.");
+        // 🚨 block if not verified
+        if (!userCredential.user.emailVerified) {
+          toast.error("Please verify your email before signing in.");
           return;
         }
+
+        // ✅ now save user in DB
+        const result = await signUp({
+          uid: userCredential.user.uid,
+          name: userCredential.user.displayName || "User",
+          email,
+        });
+
+        if (!result.success) {
+          toast.error(result.message);
+          return;
+        }
+
+        const idToken = await userCredential.user.getIdToken();
 
         await signIn({
           email,

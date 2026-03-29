@@ -32,12 +32,16 @@ export async function getLatestInterview(params:GetLatestInterviewsParams):Promi
    })) as Interview[];
 }
 
-export async function getInterviewById(id: string):Promise<Interview | null> {
-  const interviews = await db.collection('interviews')
-  .doc(id)
-   .get();
+export async function getInterviewById(
+  id: string
+): Promise<Interview | null> {
+  const doc = await db.collection("interviews").doc(id).get();
 
-   return interviews.data() as Interview | null;
+  if (!doc.exists) {
+    return null;
+  }
+
+  return doc.data() as Interview;
 }
 
 export async function createFeedback(params: CreateFeedbackParams) {
@@ -67,7 +71,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
         model: google("gemini-2.5-flash-lite"),
         schema: feedbackSchema,
         prompt: `
-You are an AI interviewer analyzing a mock interview. Be strict and realistic.
+You are an AI interviewer analyzing a mock interview. Be strict,explain  and realistic.
 
 Transcript:
 ${formattedTranscript}
@@ -162,4 +166,19 @@ Score the candidate (0–100) in:
 
     return { success: false };
   }
+}
+
+export async function getFeedbackByInterviewId(
+  interviewId: string
+): Promise<Feedback | null> {
+
+  const snapshot = await db
+    .collection("feedback")
+    .where("interviewId", "==", interviewId)
+    .limit(1)
+    .get();
+
+  if (snapshot.empty) return null;
+
+  return snapshot.docs[0].data() as Feedback;
 }
