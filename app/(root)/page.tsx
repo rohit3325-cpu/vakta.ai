@@ -1,10 +1,9 @@
 import Interviewcard from '@/components/Interviewcard'
 import { Button } from '@/components/ui/button'
-import { getCurrentUser} from '@/lib/actions/auth.action'
+import { getCurrentUser } from '@/lib/actions/auth.action'
 import { getInterviewByUserId, getLatestInterview } from '@/lib/actions/general.action'
 import Image from 'next/image'
 import Link from 'next/link'
-import React from 'react'
 
 const Page = async () => {
   const user = await getCurrentUser();
@@ -17,8 +16,25 @@ const Page = async () => {
   const hasPastInterviews = userInterview?.length > 0;
   const hasUpcomingInterviews = latestInterviews?.length > 0;
 
+  // stats calculation
+  const interviews = userInterview || [];
+
+  const averageScore =
+    interviews.length > 0
+      ? Math.round(
+          interviews.reduce(
+            (acc: number, item: any) => acc + (item.totalScore || 0),
+            0
+          ) / interviews.length
+        )
+      : 0;
+
+  const recommendedCount =
+    interviews.filter((i: any) => (i.totalScore || 0) >= 70).length;
+
   return (
     <>
+      {/* hero */}
       <section className="card-cta flex flex-col items-center gap-8 lg:flex-row lg:justify-between">
         <div className="space-y-6 text-center lg:text-left">
           <div className="space-y-6 mx-auto lg:mx-0">
@@ -45,6 +61,32 @@ const Page = async () => {
           className="w-[220px] sm:w-[300px] lg:w-[400px] h-auto"
         />
       </section>
+
+      {/* stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
+        <div className="bg-[#111827] border border-gray-800 rounded-xl p-5">
+          <p className="text-gray-400 text-sm">Total Interviews</p>
+          <h3 className="text-2xl font-semibold mt-1">
+            {interviews.length}
+          </h3>
+        </div>
+
+        <div className="bg-[#111827] border border-gray-800 rounded-xl p-5">
+          <p className="text-gray-400 text-sm">Average Score</p>
+          <h3 className="text-2xl font-semibold mt-1">
+            {averageScore || "--"}
+          </h3>
+        </div>
+
+        <div className="bg-[#111827] border border-gray-800 rounded-xl p-5">
+          <p className="text-gray-400 text-sm">Recommended</p>
+          <h3 className="text-2xl font-semibold text-green-400 mt-1">
+            {recommendedCount}
+          </h3>
+        </div>
+      </div>
+
+      
 
       {/* past interview */}
       <section className='flex flex-col gap-6 mt-8'>
