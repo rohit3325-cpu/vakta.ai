@@ -46,7 +46,7 @@ export async function signUp(params: SignUpParams) {
     const userRecord = await db.collection("users").doc(uid).get();
     if (userRecord.exists)
       return {
-        success: false,
+        success: true,
         message: "User already exists. Please sign in.",
       };
 
