@@ -13,6 +13,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendEmailVerification,
+  updateProfile,
 } from "firebase/auth";
 
 import { Form } from "@/components/ui/form";
@@ -52,6 +53,9 @@ const AuthForm = ({ type }: { type: FormType }) => {
           email,
           password
         );
+         await updateProfile(userCredential.user, {
+            displayName: name,
+        });
 
         // ✅ send verification email
         await sendEmailVerification(userCredential.user, {
@@ -62,6 +66,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
         toast.success(
           "Verification email sent. If you don't see it, check your spam folder."
         );
+       
 
         router.push("/sign-in");
       } else {
