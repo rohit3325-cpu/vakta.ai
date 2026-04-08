@@ -7,8 +7,7 @@ import { useEffect, useState } from 'react';
 import { vapi } from '@/lib/vapi.sdk';
 import { interviewer } from '@/constants';
 
-// ❌ REMOVE THIS (IMPORTANT)
-// import { createFeedback } from '@/lib/actions/general.action';
+
 
 enum CallStatus {
   INACTIVE = 'INACTIVE',
