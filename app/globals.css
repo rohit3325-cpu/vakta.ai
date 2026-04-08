@@ -332,3 +332,10 @@
     transform: translateY(0);
   }
 }
+
+@layer components {
+  .dashboard-card {
+    @apply bg-[#111827] border border-gray-800 rounded-xl p-6 
+    hover:border-primary transition cursor-pointer;
+  }
+}
